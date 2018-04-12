@@ -7,6 +7,8 @@ public final class DES {
     public DES(){
         message = "DES Initialization";
     }
+
+    //2
     public static BitSet initialPermutation(BitSet tableOf64bits){
 
         BitSet IP_array = new BitSet(64);
@@ -27,26 +29,7 @@ public final class DES {
         return IP_array;
     }
 
-    public static BitSet expansionPermutation(BitSet tableOf32bits){
-
-        BitSet EP_array = new BitSet(48);
-        //EP_array.size();
-        int index = 0, bitNumber = 31;
-        for(int row = 0; row < 8; row++) {
-            for(int column = 0; column < 6; column++) {
-                if(bitNumber > 31)bitNumber = 0;
-                EP_array.set(index,tableOf32bits.get(bitNumber));
-                index++;
-                bitNumber++;
-                System.out.print(bitNumber+ " ");
-            }
-            bitNumber-=2;
-            System.out.println("");
-        }
-
-        return EP_array;
-    }
-
+    //4
     public static BitSet permutatedChoice1(BitSet tableOf64bits){
         BitSet PC1_array = new BitSet(56);
         //LEFT
@@ -81,6 +64,21 @@ public final class DES {
         return PC1_array;
     }
 
+    //6
+    public static BitSet leftShift(BitSet tableOf28bits ){
+        BitSet LF_array = tableOf28bits.get(1,28);
+        LF_array.set(27,tableOf28bits.get(0));
+        for(int i =0; i < 28;i++){
+            if(LF_array.get(i))
+                System.out.print(1);
+            else
+                System.out.print(0);
+
+        }
+        return LF_array;
+    }
+
+    //7
     public static BitSet permutatedChoice2(BitSet tableOf56bits){
         BitSet PC2_array = new BitSet(48);
         int []dependencies = {13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,3,25,7,15,6,26,19,12,1,40,51,30,36,46,54,29,39,50,44,32,47,43,48,38,55,33,52,45,41,49,35,28,31};
@@ -92,17 +90,25 @@ public final class DES {
         return PC2_array;
     }
 
-    public static BitSet leftShift(BitSet tableOf28bits ){
-        BitSet LF_array = tableOf28bits.get(1,28);
-        LF_array.set(27,tableOf28bits.get(0));
-        for(int i =0; i < 28;i++){
-            if(LF_array.get(i))
-            System.out.print(1);
-            else
-             System.out.print(0);
+    //8
+    public static BitSet expansionPermutation(BitSet tableOf32bits){
 
+        BitSet EP_array = new BitSet(48);
+        //EP_array.size();
+        int index = 0, bitNumber = 31;
+        for(int row = 0; row < 8; row++) {
+            for(int column = 0; column < 6; column++) {
+                if(bitNumber > 31)bitNumber = 0;
+                EP_array.set(index,tableOf32bits.get(bitNumber));
+                index++;
+                bitNumber++;
+                System.out.print(bitNumber+ " ");
+            }
+            bitNumber-=2;
+            System.out.println("");
         }
-        return LF_array;
+
+        return EP_array;
     }
 
     //9
@@ -128,14 +134,14 @@ public final class DES {
             switch(column){
                 case 11: column = 3; break;
                 case 10: column = 2; break;
-                case 01: column = 1; break;
-                case 00: column = 0; break;
+                case 1: column = 1; break;
+                case 0: column = 0; break;
                 default: column = 0; break;
             }
 
             row = (key48b.get(index+1) ? 1000 : 0) + (key48b.get(index+2) ? 100 : 0) + (key48b.get(index+3) ? 10 : 0) + (key48b.get(index+4) ? 1 : 0);
             switch (row){
-                case 0000: row = 0; break;
+                case 0: row = 0; break;
                 case 1111: row = 15; break;
                 case 1110: row = 14; break;
                 case 1101: row = 13; break;
@@ -144,13 +150,13 @@ public final class DES {
                 case 1010: row = 10; break;
                 case 1001: row = 9; break;
                 case 1000: row = 8; break;
-                case 0111: row = 7; break;
-                case 0110: row = 6; break;
-                case 0101: row = 5; break;
-                case 0100: row = 4; break;
-                case 0011: row = 3; break;
-                case 0010: row = 2; break;
-                case 0001: row = 1; break;
+                case 111: row = 7; break;
+                case 110: row = 6; break;
+                case 101: row = 5; break;
+                case 100: row = 4; break;
+                case 11: row = 3; break;
+                case 10: row = 2; break;
+                case 1: row = 1; break;
                 default: row = 0; break;
             }
 
