@@ -1,11 +1,80 @@
 package com.company;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 public final class DES {
     private static String message;
     public DES(){
         message = "DES Initialization";
+    }
+
+    public static void encrypt(String fileName,BitSet key){
+        byte [] input = FileManager.readBinaryFile(fileName); //nadpisywanie inputa -> mniej pamięci
+
+        BitSet copyKey = (BitSet) key.clone();
+        for(int i = 0; i < input.length ; i+=8){
+
+            BitSet temporary = DES.initialPermutation(BitSet.valueOf(Arrays.copyOfRange(input,i,i+8)));
+            BitSet left = temporary.get(0,32);
+            BitSet right = temporary.get(32,64);
+
+            copyKey = DES.permutatedChoice1(copyKey);
+            BitSet leftCopyKey = copyKey.get(0,28);
+            BitSet rigthCopyKey = copyKey.get(28,56);
+
+            for(int j = 0; j < 16 ; j++){
+
+                if(j == 0 || j == 1 || j == 8 || j == 15) {
+                    leftCopyKey = DES.leftShift(leftCopyKey);
+                    rigthCopyKey = DES.leftShift(rigthCopyKey);
+                }
+                else{
+
+                    leftCopyKey = DES.leftShift(leftCopyKey);
+                    rigthCopyKey = DES.leftShift(rigthCopyKey);
+                    leftCopyKey = DES.leftShift(leftCopyKey);
+                    rigthCopyKey = DES.leftShift(rigthCopyKey);
+                }
+
+                BitSet outputKey = append2BitSets(leftCopyKey, rigthCopyKey,28);
+
+                outputKey = permutatedChoice2(outputKey);
+
+                BitSet expandedRight = expansionPermutation(right);
+                expandedRight.xor(outputKey);
+
+                //tu moze pierdolnac
+                BitSet right32b = decreaseKeyTo32b(expandedRight);
+                right32b = permutate32bitKey(right32b);
+                left.xor(right32b);
+
+                BitSet pom = left;
+                left = right;
+                right = pom;
+            }
+            BitSet almostFinished = append2BitSets(right,left,32);
+            almostFinished = reversedInitialPermutation(almostFinished);
+
+            byte[] array = almostFinished.toByteArray();
+
+               for(int k = 0; k < array.length; k++){
+                   input[i+k] = array[k];  //nadpisywanie inputa -> mniej pamięci
+           }
+                for(int k = array.length;k<8;k++){
+                   input[i+k] = 0;
+                }
+        }
+        FileManager.writeBinaryFile("C:\\Users\\Maciej\\Desktop\\DESoutput.bin",input);
+    }
+
+    private static BitSet append2BitSets(BitSet firstHalf, BitSet secondHalf,int numberOfBits) {
+        BitSet outputKey = new BitSet(numberOfBits*2);
+        for(int index = 0; index < numberOfBits; index++)
+            outputKey.set(index,firstHalf.get(index));
+        for(int index = 0; index < numberOfBits; index++)
+            outputKey.set(index+numberOfBits,secondHalf.get(index));
+        return outputKey;
     }
 
     //2
@@ -68,13 +137,6 @@ public final class DES {
     public static BitSet leftShift(BitSet tableOf28bits ){
         BitSet LF_array = tableOf28bits.get(1,28);
         LF_array.set(27,tableOf28bits.get(0));
-        for(int i =0; i < 28;i++){
-            if(LF_array.get(i))
-                System.out.print(1);
-            else
-                System.out.print(0);
-
-        }
         return LF_array;
     }
 
@@ -102,10 +164,10 @@ public final class DES {
                 EP_array.set(index,tableOf32bits.get(bitNumber));
                 index++;
                 bitNumber++;
-                System.out.print(bitNumber+ " ");
+
             }
             bitNumber-=2;
-            System.out.println("");
+
         }
 
         return EP_array;
@@ -159,11 +221,12 @@ public final class DES {
                 case 1: row = 1; break;
                 default: row = 0; break;
             }
-
-            String resultBinStr = Integer.toBinaryString(Tables.S[i][row * 16 + column]);
+            int[][] localS = Tables.getS();
+            String resultBinStr = Integer.toBinaryString(localS[i][row * 4 + column]);
             for (int j = 0 ; j < resultBinStr.length() ; j++)
             {
-                if (resultBinStr.codePointAt(3-j) == '1')
+                //TU to moze nie dzialac
+                if (resultBinStr.codePointAt(resultBinStr.length()-1-j) == '1')
                     resultBitSet.set(i*4+j);
             }
         }
@@ -196,7 +259,7 @@ public final class DES {
     {
         BitSet result = new BitSet(64);
 
-        for (int i = 0 ; i < 32 ; i++)
+        for (int i = 0 ; i < 64 ; i++)
             result.set(i, tableOf64bits.get(Tables.REVERSED_IP[i]));
 
         return result;
