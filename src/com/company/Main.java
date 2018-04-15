@@ -10,8 +10,8 @@ public class Main {
         byte[] xdb = {43,54,86,-10,-64,100,1,43};
         xd = BitSet.valueOf(xdb);
 
-        DES.encrypt("C:\\Users\\Maciej\\Desktop\\BSK\\3 i 4\\test.bin",xd);
-
+        DES.encrypt("C:\\Users\\Maciej\\Desktop\\BSK\\3 i 4\\JD.bin",xd);
+        DES.decrypt("C:\\Users\\Maciej\\Desktop\\DESoutput.bin",xd);
 
     }
 }

@@ -5,9 +5,14 @@ import java.util.BitSet;
 
 public class FileManager {
 
-    public static byte[] readBinaryFile(String filePath) {
+    public static byte[] readBinaryFile(String filePath, boolean ifEncrypt) {
         File inputFile = new File(filePath);
-        byte[] byteData = new byte[(int) inputFile.length() + 8 - ((int)inputFile.length() % 8)];
+
+        byte[] byteData;
+        if(ifEncrypt)
+            byteData = new byte[(int) inputFile.length() + 8 - ((int)inputFile.length() % 8)];
+        else
+            byteData =new byte[(int) inputFile.length()];
         try {
 
             FileInputStream fileInputStreams = new FileInputStream(inputFile);
@@ -18,11 +23,12 @@ public class FileManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(ifEncrypt){
         byte[]paddingArray = padding((int)inputFile.length());
         for(int i = (int) inputFile.length(),j = 0; i < byteData.length; i++,j++)
         {
             byteData[i]= paddingArray[j];
-        }
+        }}
         return byteData;
     }
 
@@ -40,11 +46,11 @@ public class FileManager {
         return padding;
     }
 
-    public static void writeBinaryFile(String filePath, byte[] data) {
+    public static void writeBinaryFile(String filePath, byte[] data,int index) {
         File outputFile = new File(filePath);
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-            fileOutputStream.write(data, 0, data.length);
+            fileOutputStream.write(data, 0, index);
             fileOutputStream.flush();
             fileOutputStream.close();
         } catch (FileNotFoundException e) {

@@ -10,7 +10,7 @@ public final class DES {
     }
 
     public static void encrypt(String fileName,BitSet key){
-        byte [] input = FileManager.readBinaryFile(fileName); //nadpisywanie inputa -> mniej pamięci
+        byte [] input = FileManager.readBinaryFile(fileName,true); //nadpisywanie inputa -> mniej pamięci
 
         BitSet copyKey = (BitSet) key.clone();
         for(int i = 0; i < input.length ; i+=8){
@@ -44,7 +44,7 @@ public final class DES {
                 BitSet expandedRight = expansionPermutation(right);
                 expandedRight.xor(outputKey);
 
-                //tu moze pierdolnac
+
                 BitSet right32b = decreaseKeyTo32b(expandedRight);
                 right32b = permutate32bitKey(right32b);
                 left.xor(right32b);
@@ -53,6 +53,7 @@ public final class DES {
                 left = right;
                 right = pom;
             }
+            //zmiana
             BitSet almostFinished = append2BitSets(right,left,32);
             almostFinished = reversedInitialPermutation(almostFinished);
 
@@ -65,7 +66,74 @@ public final class DES {
                    input[i+k] = 0;
                 }
         }
-        FileManager.writeBinaryFile("C:\\Users\\Maciej\\Desktop\\DESoutput.bin",input);
+        FileManager.writeBinaryFile("C:\\Users\\Maciej\\Desktop\\DESoutput.bin",input,input.length);
+    }
+
+    public static void decrypt(String fileName,BitSet key){
+        byte [] input = FileManager.readBinaryFile(fileName,false); //nadpisywanie inputa -> mniej pamięci
+        BitSet copyKey = (BitSet) key.clone();
+        for(int i = 0; i < input.length ; i+=8){
+
+            BitSet temporary = DES.initialPermutation(BitSet.valueOf(Arrays.copyOfRange(input,i,i+8)));
+            BitSet left = temporary.get(0,32);
+            BitSet right = temporary.get(32,64);
+
+            copyKey = DES.permutatedChoice1(copyKey);
+            BitSet leftCopyKey = copyKey.get(0,28);
+            BitSet rigthCopyKey = copyKey.get(28,56);
+            //leftCopyKey = leftShift32X(leftCopyKey);
+            //rigthCopyKey = leftShift32X(rigthCopyKey);
+
+            for(int j = 15; j >= 0 ; j--){
+
+                if(j == 0 || j == 1 || j == 8 || j == 15) {
+                    leftCopyKey = DES.rightShift(leftCopyKey);
+                    rigthCopyKey = DES.rightShift(rigthCopyKey);
+                }
+                else{
+
+                    leftCopyKey = DES.rightShift(leftCopyKey);
+                    rigthCopyKey = DES.rightShift(rigthCopyKey);
+                    leftCopyKey = DES.rightShift(leftCopyKey);
+                    rigthCopyKey = DES.rightShift(rigthCopyKey);
+                }
+
+                BitSet outputKey = append2BitSets(leftCopyKey, rigthCopyKey,28);
+                outputKey = permutatedChoice2(outputKey);
+
+                BitSet expandedRight = expansionPermutation(right);
+                expandedRight.xor(outputKey);
+
+
+                BitSet right32b = decreaseKeyTo32b(expandedRight);
+                right32b = permutate32bitKey(right32b);
+                left.xor(right32b);
+
+                BitSet pom = right;
+                right = left;
+                left = pom;
+            }
+            BitSet almostFinished = append2BitSets(right,left,32);
+            almostFinished = reversedInitialPermutation(almostFinished);
+
+            byte[] array = almostFinished.toByteArray();
+
+            for(int k = 0; k < array.length; k++){
+                input[i+k] = array[k];  //nadpisywanie inputa -> mniej pamięci
+            }
+            for(int k = array.length;k<8;k++){
+                input[i+k] = 0;
+            }
+        }
+        int index = 0;
+        for(int i = input.length-1; i >=0; i--){
+            if(input[i]==1)
+            {
+                index = i;
+                break;
+            }
+        }
+        FileManager.writeBinaryFile("C:\\Users\\Maciej\\Desktop\\DESdecryptOutput.bin",input,input.length);
     }
 
     private static BitSet append2BitSets(BitSet firstHalf, BitSet secondHalf,int numberOfBits) {
@@ -106,7 +174,7 @@ public final class DES {
         for(int row = 0; row <4; row++) {
             for(int column = 0; column < 7; column++) {
 
-                PC1_array.set(index,tableOf64bits.get(bitNumber));
+                PC1_array.set(index++,tableOf64bits.get(bitNumber));
                 if(bitNumber-8 < 0)bitNumber = ++bitNumberRemember;
                 else bitNumber-=8;
 
@@ -118,7 +186,7 @@ public final class DES {
         bitNumber = bitNumberRemember;
         for(int row = 0; row <4; row++) {
             for(int column = 0; column < 7; column++) {
-                PC1_array.set(index,tableOf64bits.get(bitNumber));
+                PC1_array.set(index++,tableOf64bits.get(bitNumber));
                 if(bitNumber-8 < 0){
                     if(bitNumber==4)
                         bitNumber = 27;
@@ -140,6 +208,20 @@ public final class DES {
         return LF_array;
     }
 
+    public static BitSet rightShift(BitSet tableOf28bits){
+        BitSet R_array = new BitSet(28);
+        for(int i = 1; i < 28; i++)
+            R_array.set(i,tableOf28bits.get(i-1));
+        R_array.set(0,tableOf28bits.get(27));
+        return R_array;
+    }
+
+    public static BitSet leftShift32X(BitSet tableOf28bits){
+        BitSet LF_array = tableOf28bits;
+        for(int i = 0; i < 4; i++)
+        LF_array= leftShift(LF_array);
+        return LF_array;
+    }
     //7
     public static BitSet permutatedChoice2(BitSet tableOf56bits){
         BitSet PC2_array = new BitSet(48);
@@ -222,12 +304,12 @@ public final class DES {
                 default: row = 0; break;
             }
             int[][] localS = Tables.getS();
-            String resultBinStr = Integer.toBinaryString(localS[i][row * 4 + column]);
+            String resultBinStr = Integer.toBinaryString(localS[i][row  + column * 16]);
             for (int j = 0 ; j < resultBinStr.length() ; j++)
             {
                 //TU to moze nie dzialac
-                if (resultBinStr.codePointAt(resultBinStr.length()-1-j) == '1')
-                    resultBitSet.set(i*4+j);
+                if (resultBinStr.codePointAt(j) == '1')
+                    resultBitSet.set(i*4+j + 4-resultBinStr.length());
             }
         }
 
