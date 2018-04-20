@@ -1,6 +1,7 @@
 package com.company;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.BitSet;
 
 public class FileManager {
@@ -18,11 +19,13 @@ public class FileManager {
             FileInputStream fileInputStreams = new FileInputStream(inputFile);
             fileInputStreams.read(byteData, 0, byteData.length);
             fileInputStreams.close();
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         if(ifEncrypt){
         byte[]paddingArray = padding((int)inputFile.length());
         for(int i = (int) inputFile.length(),j = 0; i < byteData.length; i++,j++)
@@ -66,5 +69,29 @@ public class FileManager {
         outputStringBuilder.append(filePath);
         outputStringBuilder.insert(dotIndex, "_output");
         return outputStringBuilder.toString();
+    }
+
+    public static BitSet getKey(String filePath){
+        File inputFile = new File(filePath);
+
+        byte[] byteData = new byte[(int)inputFile.length()];
+        try {
+
+            FileInputStream fileInputStreams = new FileInputStream(inputFile);
+            fileInputStreams.read(byteData, 0, byteData.length);
+            fileInputStreams.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        byte []blockOf64bits =  Arrays.copyOfRange(byteData,0,8);
+
+        BitSet key = BitSet.valueOf(blockOf64bits);
+
+
+        return key;
     }
 }

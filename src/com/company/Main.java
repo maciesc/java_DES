@@ -6,6 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
 
+        /*
         BitSet xd = new BitSet(64);
         byte[] xdb = {43,54,86,-10,-64,100,1,43};
         xd = BitSet.valueOf(xdb);
@@ -61,9 +62,11 @@ public class Main {
 
         DES.encrypt("C:\\Users\\Maciej\\Desktop\\BSK\\3 i 4\\JD.bin",key);
         DES.decrypt("C:\\Users\\Maciej\\Desktop\\encrypted.bin",key);
+        */
+        Menu.printMenu();
 
     }
-    public static void debugXD(String message,BitSet key,int modulo){
+    public static void debug(String message,BitSet key,int modulo){
         System.out.println(message);
         for(int i = 0;i<key.size();i++){
             System.out.print(key.get(i)?1:0);

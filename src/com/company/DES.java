@@ -9,15 +9,9 @@ public final class DES {
         BitSet [] keyTable = new BitSet[16];
 
         BitSet copyKey = DES.permutatedChoice1(key);
-        //Main.debugXD("56bit",copyKey,7);
 
         BitSet leftCopyKey = copyKey.get(0,28);
-        //Main.debugXD("C0",leftCopyKey,7);
         BitSet rigthCopyKey = copyKey.get(28,56);
-        //Main.debugXD("D0",rigthCopyKey,7);
-
-
-
 
         for(int j = 0; j < 16 ; j++) {
 
@@ -32,12 +26,12 @@ public final class DES {
                 rigthCopyKey = DES.leftShift(rigthCopyKey);
             }
 
-            //Main.debugXD("C"+(j+1),leftCopyKey,28);
-            //Main.debugXD("D"+(j+1),rigthCopyKey,28);
+
             keyTable[j] = append2BitSets(leftCopyKey, rigthCopyKey,28);
         }
         return keyTable;
     }
+
     public static void encrypt(String fileName,BitSet key){
         byte [] input = FileManager.readBinaryFile(fileName,true); //nadpisywanie inputa -> mniej pamięci
         BitSet[] keyTable = keygenerator(key);
@@ -47,26 +41,7 @@ public final class DES {
             byte []blockOf64bits = Arrays.copyOfRange(input,i,i+8);
 
             BitSet inputBitSet = BitSet.valueOf(blockOf64bits);
-
-            /*BitSet convertedInput = new BitSet(64);
-            for(int k = 0;k <8;k++){
-                int d=k*8;
-                boolean position0 =inputBitSet.get(d);
-                boolean position1 =inputBitSet.get((d+1));
-                boolean position2 =inputBitSet.get(d+2);
-                boolean position3 =inputBitSet.get((d+3));
-                convertedInput.set(d,inputBitSet.get((d)+7));
-                convertedInput.set(d+1,inputBitSet.get((d)+6));
-                convertedInput.set(d+2,inputBitSet.get((d)+5));
-                convertedInput.set(d+3,inputBitSet.get((d)+4));
-                convertedInput.set(d+4,position3);
-                convertedInput.set(d+5,position2);
-                convertedInput.set(d+6,position1);
-                convertedInput.set(d+7,position0);
-            }
-            */
             BitSet temporary = DES.initialPermutation(inputBitSet);
-            
 
             BitSet left = temporary.get(0,32);
             BitSet right = temporary.get(32,64);
@@ -105,7 +80,7 @@ public final class DES {
             byte[] array = almostFinished.toByteArray();
 
                for(int k = 0; k < array.length; k++){
-                   input[i+k] = array[k];  //nadpisywanie inputa -> mniej pamięci
+                   input[i+k] = array[k];
            }
                 for(int k = array.length;k<8;k++){
                    input[i+k] = 0;
@@ -115,8 +90,8 @@ public final class DES {
     }
 
     public static void decrypt(String fileName,BitSet key){
-        byte [] input = FileManager.readBinaryFile(fileName,false); //nadpisywanie inputa -> mniej pamięci
-        //BitSet copyKey = (BitSet) key.clone();
+        byte [] input = FileManager.readBinaryFile(fileName,false);
+
         BitSet[] keyTable = keygenerator(key);
         for(int i = 0; i < input.length ; i+=8){
 
@@ -148,7 +123,7 @@ public final class DES {
             byte[] array = almostFinished.toByteArray();
 
             for(int k = 0; k < array.length; k++){
-                input[i+k] = array[k];  //nadpisywanie inputa -> mniej pamięci
+                input[i+k] = array[k];
             }
             for(int k = array.length;k<8;k++){
                 input[i+k] = 0;
